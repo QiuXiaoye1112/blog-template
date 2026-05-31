@@ -1,0 +1,129 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings?: Heading[];
+}
+
+interface TocChild extends Heading {
+  title: string;
+}
+
+interface TocSection extends Heading {
+  title: string;
+  children: TocChild[];
+}
+
+const { headings = [] } = Astro.props;
+const getTitle = (text: string) => text.trim();
+const hasTopLevelHeading = headings.some((item) => item.depth === 1);
+const sectionDepth = hasTopLevelHeading ? 1 : 2;
+const childDepth = sectionDepth + 1;
+
+const sections: TocSection[] = [];
+let currentSection: TocSection | undefined;
+
+for (const heading of headings.filter((item) => item.depth === sectionDepth || item.depth === childDepth)) {
+  if (heading.depth === sectionDepth) {
+    currentSection = {
+      ...heading,
+      title: getTitle(heading.text),
+      children: [],
+    };
+    sections.push(currentSection);
+    continue;
+  }
+
+  if (!currentSection) {
+    continue;
+  }
+
+  currentSection.children.push({
+    ...heading,
+    title: getTitle(heading.text),
+  });
+}
+
+const itemCount = sections.reduce((count, section) => count + 1 + section.children.length, 0);
+---
+
+{
+  itemCount > 1 && (
+    <nav
+      class="site-surface site-toc mt-8 overflow-hidden p-0"
+      aria-labelledby="toc-title"
+    >
+      <div class="site-toc-header border-b border-[var(--border)] bg-[var(--panel-muted)]/45 px-4 py-3">
+        <p id="toc-title" class="site-title flex items-center gap-2 text-sm font-semibold">
+          <span class="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_18px_var(--accent-border)]" />
+          文章目录
+        </p>
+      </div>
+      <ol class="site-scrollbar max-h-[28rem] divide-y divide-[var(--border)] overflow-y-auto overscroll-contain">
+        {sections.map((section) => (
+          <li>
+            {
+              section.children.length > 0 ? (
+                <details class="group/toc-section">
+                  <summary class="site-toc-summary flex cursor-pointer list-none items-start gap-3 px-4 py-3 transition hover:bg-[var(--panel-hover)]">
+                    <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_14px_var(--accent-border)]" />
+                    <span class="min-w-0 flex-1 leading-6 text-[var(--text)] transition group-hover/toc-section:text-[var(--accent-text)]">
+                      {section.title}
+                    </span>
+                    <span
+                      class="site-toc-toggle grid h-7 w-7 shrink-0 place-items-center border border-[var(--accent-border)] bg-[var(--accent-soft)] text-[var(--accent-text)] shadow-sm shadow-[var(--shadow)] transition group-open/toc-section:rotate-180 group-hover/toc-section:-translate-y-0.5 group-hover/toc-section:border-[var(--accent)] group-hover/toc-section:bg-[var(--panel-hover)] group-hover/toc-section:shadow-md"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        class="h-3.5 w-3.5"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
+                        <path
+                          d="M5 7.5L10 12.5L15 7.5"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </summary>
+                  <ol class="site-toc-children border-t border-[var(--border)] bg-[var(--panel-muted)]/25 py-1">
+                    {section.children.map((child) => (
+                      <li>
+                        <a
+                          href={`#${child.slug}`}
+                          class="site-toc-link group flex items-start gap-3 px-4 py-2 pl-12 text-xs transition hover:bg-[var(--panel-hover)]"
+                        >
+                          <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent-border)] transition group-hover:bg-[var(--accent)]" />
+                          <span class="leading-6 text-[var(--muted)] transition group-hover:text-[var(--accent-text)]">
+                            {child.title}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              ) : (
+                <a
+                  href={`#${section.slug}`}
+                  class="site-toc-link group/toc flex items-start gap-3 px-4 py-3 transition hover:bg-[var(--panel-hover)]"
+                >
+                  <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_14px_var(--accent-border)]" />
+                  <span class="leading-6 text-[var(--text)] transition group-hover/toc:text-[var(--accent-text)]">
+                    {section.title}
+                  </span>
+                </a>
+              )
+            }
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

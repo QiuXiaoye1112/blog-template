@@ -1,0 +1,26 @@
+---
+import BackToTop from "./BackToTop.astro";
+
+interface Props {
+  href: string;
+  label: string;
+}
+
+const { href, label } = Astro.props;
+---
+
+<div class="sticky-back-actions sticky top-20 z-30 ml-auto flex w-fit flex-col items-end gap-2 md:top-24">
+  <a
+    href={href}
+    aria-label={label}
+    title={label}
+    class="sticky-back-link inline-flex items-center border text-sm transition"
+  >
+    <svg class="sticky-action-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 12H6.5"></path>
+      <path d="M11.5 6.5 6 12l5.5 5.5"></path>
+    </svg>
+    <span class="sticky-back-label">{label}</span>
+  </a>
+  <BackToTop />
+</div>

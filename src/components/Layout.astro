@@ -1,0 +1,344 @@
+﻿---
+import Header from "./Header.astro";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const siteName = "Blog Template";
+const defaultDescription = "一个适合新手上手的个人博客模板";
+const { title, description = defaultDescription } = Astro.props;
+const pageTitle = title ? `${title} | ${siteName}` : `${siteName} | ${defaultDescription}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <script is:inline>
+      (() => {
+        const storageKey = "blog-template-theme";
+        const backgroundStorageKey = "blog-template-background";
+        const defaultThemeMode = "system";
+        const defaultBackgroundMode = "photo";
+        const root = document.documentElement;
+        const getSystemTheme = () => window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const resolveTheme = (themeMode) => themeMode === "dark" || themeMode === "light" ? themeMode : getSystemTheme();
+
+        try {
+          const savedThemeMode = localStorage.getItem(storageKey);
+          const themeMode = ["system", "dark", "light"].includes(savedThemeMode) ? savedThemeMode : defaultThemeMode;
+
+          root.dataset.theme = resolveTheme(themeMode);
+        } catch {
+          root.dataset.theme = "dark";
+        }
+
+        try {
+          const savedBackgroundMode = localStorage.getItem(backgroundStorageKey);
+          root.dataset.background = savedBackgroundMode === "plain" ? "plain" : defaultBackgroundMode;
+        } catch {
+          root.dataset.background = defaultBackgroundMode;
+        }
+
+        try {
+          if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            root.classList.add("motion-ready");
+          }
+        } catch {
+          root.classList.add("motion-ready");
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#080b10" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{pageTitle}</title>
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <Header />
+    <main
+      data-page-content
+      class="site-main mx-auto min-h-[calc(100vh-10rem)] max-w-5xl px-4 py-10 md:px-6 md:py-14"
+    >
+      <slot />
+    </main>
+    <script src="/code-copy.js" defer></script>
+    <script is:inline>
+      (() => {
+        if (window.__blogTemplateMotionSetup) {
+          window.__blogTemplateMotionSetup();
+          return;
+        }
+
+        const root = document.documentElement;
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const revealSelector = "[data-scroll-reveal]";
+        let observer = null;
+
+        const syncMotionClass = () => {
+          root.classList.toggle("motion-ready", !reducedMotion.matches);
+        };
+
+        const revealElement = (element) => {
+          if (element.classList.contains("is-revealed")) {
+            return;
+          }
+
+          element.classList.add("is-revealed");
+          element.addEventListener(
+            "animationend",
+            () => element.classList.add("is-reveal-complete"),
+            { once: true },
+          );
+        };
+
+        const setupScrollReveal = () => {
+          syncMotionClass();
+
+          if (observer) {
+            observer.disconnect();
+            observer = null;
+          }
+
+          const elements = Array.from(document.querySelectorAll(revealSelector));
+
+          if (reducedMotion.matches || !("IntersectionObserver" in window)) {
+            elements.forEach((element) => {
+              revealElement(element);
+              element.classList.add("is-reveal-complete");
+            });
+            return;
+          }
+
+          observer = new IntersectionObserver(
+            (entries, currentObserver) => {
+              entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                  return;
+                }
+
+                revealElement(entry.target);
+                currentObserver.unobserve(entry.target);
+              });
+            },
+            {
+              rootMargin: "0px 0px -8% 0px",
+              threshold: 0.16,
+            },
+          );
+
+          elements.forEach((element, index) => {
+            if (!element.style.getPropertyValue("--reveal-delay")) {
+              element.style.setProperty("--reveal-delay", `${index * 100}ms`);
+            }
+
+            if (!element.classList.contains("is-revealed")) {
+              observer.observe(element);
+            }
+          });
+        };
+
+        const setupMotion = () => {
+          setupScrollReveal();
+        };
+
+        window.__blogTemplateMotionSetup = setupMotion;
+        setupMotion();
+
+        if (typeof reducedMotion.addEventListener === "function") {
+          reducedMotion.addEventListener("change", setupMotion);
+        } else {
+          reducedMotion.addListener(setupMotion);
+        }
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        if (window.__blogTemplateThemeSetup) {
+          window.__blogTemplateThemeSetup();
+          return;
+        }
+
+        const storageKey = "blog-template-theme";
+        const backgroundStorageKey = "blog-template-background";
+        const defaultThemeMode = "system";
+        const defaultBackgroundMode = "photo";
+        const themeModes = ["system", "dark", "light"];
+        const backgroundModes = ["photo", "plain"];
+        const root = document.documentElement;
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        let backgroundToggles = [];
+        let themeToggles = [];
+
+        const getSystemTheme = () => mediaQuery.matches ? "dark" : "light";
+        const resolveTheme = (themeMode) => themeMode === "dark" || themeMode === "light" ? themeMode : getSystemTheme();
+        const themeModeLabels = {
+          system: "跟随系统",
+          dark: "深色",
+          light: "浅色",
+        };
+        const getNextThemeMode = (themeMode) => {
+          const currentIndex = themeModes.indexOf(themeMode);
+
+          return themeModes[(currentIndex + 1) % themeModes.length] ?? defaultThemeMode;
+        };
+
+        const getStoredThemeMode = () => {
+          try {
+            const savedThemeMode = localStorage.getItem(storageKey);
+            return themeModes.includes(savedThemeMode) ? savedThemeMode : defaultThemeMode;
+          } catch {
+            return defaultThemeMode;
+          }
+        };
+
+        const getStoredBackgroundMode = () => {
+          try {
+            const savedBackgroundMode = localStorage.getItem(backgroundStorageKey);
+            return backgroundModes.includes(savedBackgroundMode) ? savedBackgroundMode : defaultBackgroundMode;
+          } catch {
+            return defaultBackgroundMode;
+          }
+        };
+
+        const updateMetaTheme = (theme) => {
+          const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+          if (themeMeta) {
+            themeMeta.setAttribute("content", theme === "dark" ? "#080b10" : "#f8fafc");
+          }
+        };
+
+        const updateThemeControls = (themeMode, theme) => {
+          const nextThemeMode = getNextThemeMode(themeMode);
+          const currentLabel = themeModeLabels[themeMode] ?? themeModeLabels.system;
+          const nextLabel = themeModeLabels[nextThemeMode] ?? themeModeLabels.system;
+          const actionLabel = `当前主题：${currentLabel}，点击切换到${nextLabel}`;
+
+          themeToggles.forEach((button) => {
+            button.dataset.themeMode = themeMode;
+            button.dataset.themeCurrent = theme;
+            button.setAttribute("aria-label", actionLabel);
+            button.setAttribute("title", actionLabel);
+          });
+        };
+
+        const updateBackgroundToggles = (backgroundMode) => {
+          const isPlain = backgroundMode === "plain";
+          const nextLabel = isPlain ? "显示背景图片" : "屏蔽背景图片";
+
+          backgroundToggles.forEach((button) => {
+            button.dataset.backgroundCurrent = backgroundMode;
+            button.setAttribute("aria-label", nextLabel);
+            button.setAttribute("title", nextLabel);
+            button.setAttribute("aria-pressed", isPlain ? "true" : "false");
+          });
+        };
+
+        const syncTheme = () => {
+          const currentThemeMode = getStoredThemeMode();
+          const currentTheme = resolveTheme(currentThemeMode);
+
+          root.dataset.theme = currentTheme;
+
+          root.style.colorScheme = currentTheme;
+          updateMetaTheme(currentTheme);
+          updateThemeControls(currentThemeMode, currentTheme);
+        };
+
+        const syncBackground = () => {
+          const currentBackgroundMode = getStoredBackgroundMode();
+
+          root.dataset.background = currentBackgroundMode;
+          updateBackgroundToggles(currentBackgroundMode);
+        };
+
+        const setThemeMode = (themeMode) => {
+          const nextThemeMode = themeModes.includes(themeMode) ? themeMode : defaultThemeMode;
+
+          try {
+            localStorage.setItem(storageKey, nextThemeMode);
+          } catch {
+            // The selected theme still applies for the current page even if storage is unavailable.
+          }
+
+          root.dataset.theme = resolveTheme(nextThemeMode);
+          syncTheme();
+        };
+
+        const setBackgroundMode = (backgroundMode) => {
+          const nextBackgroundMode = backgroundModes.includes(backgroundMode) ? backgroundMode : defaultBackgroundMode;
+
+          try {
+            localStorage.setItem(backgroundStorageKey, nextBackgroundMode);
+          } catch {
+            // The selected background mode still applies for the current page even if storage is unavailable.
+          }
+
+          root.dataset.background = nextBackgroundMode;
+          syncBackground();
+        };
+
+        const setupThemeControls = () => {
+          backgroundToggles = Array.from(document.querySelectorAll("[data-background-toggle]"));
+          themeToggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));
+
+          backgroundToggles.forEach((button) => {
+            if (button.dataset.backgroundReady === "true") {
+              return;
+            }
+
+            button.dataset.backgroundReady = "true";
+            button.addEventListener("click", () => {
+              setBackgroundMode(getStoredBackgroundMode() === "plain" ? "photo" : "plain");
+            });
+          });
+
+          themeToggles.forEach((button) => {
+            if (button.dataset.themeReady === "true") {
+              return;
+            }
+
+            button.dataset.themeReady = "true";
+            button.addEventListener("click", () => {
+              setThemeMode(getNextThemeMode(getStoredThemeMode()));
+            });
+          });
+
+          syncTheme();
+          syncBackground();
+        };
+
+        window.__blogTemplateThemeSetup = setupThemeControls;
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", setupThemeControls);
+        } else {
+          setupThemeControls();
+        }
+
+        document.addEventListener("astro:after-swap", setupThemeControls);
+        document.addEventListener("astro:page-load", setupThemeControls);
+
+        if (typeof mediaQuery.addEventListener === "function") {
+          mediaQuery.addEventListener("change", syncTheme);
+        } else {
+          mediaQuery.addListener(syncTheme);
+        }
+      })();
+    </script>
+  </body>
+</html>
+
+

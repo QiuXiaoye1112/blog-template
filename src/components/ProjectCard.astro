@@ -1,0 +1,85 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Tag from "./Tag.astro";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  reveal?: boolean;
+  revealDelay?: number;
+}
+
+const { project, reveal = false, revealDelay = 0 } = Astro.props;
+const { title, description, pubDate, updatedDate, status, tech, github, demo } = project.data;
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const displayUpdatedDate = updatedDate ?? pubDate;
+const formattedDate = dateFormatter.format(pubDate);
+const formattedUpdatedDate = dateFormatter.format(displayUpdatedDate);
+
+const statusClass = {
+  进行中: "site-status",
+  已完成: "site-status site-status--done",
+  计划中: "site-status site-status--planned",
+}[status];
+const revealStyle = reveal ? `--reveal-delay: ${revealDelay}ms` : undefined;
+---
+
+<article
+  id={project.id}
+  class:list={[
+    "site-card site-project-card flex h-full flex-col rounded-lg p-5 transition",
+    reveal && "scroll-reveal",
+  ]}
+  data-scroll-reveal={reveal ? "true" : undefined}
+  style={revealStyle}
+>
+  <div>
+    <h3 class="site-card-title text-lg font-semibold tracking-tight">{title}</h3>
+    <div class="site-muted mt-2 flex flex-wrap items-center gap-2 text-xs">
+      <span>发布 <time datetime={pubDate.toISOString()}>{formattedDate}</time></span>
+      <span aria-hidden="true">|</span>
+      <span>最后修改 <time datetime={displayUpdatedDate.toISOString()}>{formattedUpdatedDate}</time></span>
+    </div>
+    <p class="site-card-description mt-3 text-sm leading-7">{description}</p>
+  </div>
+
+  <div class="mt-4">
+    <span class={statusClass}>{status}</span>
+  </div>
+
+  <div class="mt-4 flex flex-wrap gap-2">
+    {tech.map((item) => <Tag label={item} />)}
+  </div>
+
+  <div class="mt-auto flex flex-wrap gap-3 pt-6">
+    <a
+      href={`/projects/${project.id}`}
+      class="site-action-button rounded-md transition"
+    >
+      查看详情
+    </a>
+    {github && (
+      <a
+        href={github}
+        target="_blank"
+        rel="noreferrer"
+        class="site-outline-button rounded-md px-3 py-2 text-sm transition"
+      >
+        GitHub
+      </a>
+    )}
+    {demo && (
+      <a
+        href={demo}
+        target="_blank"
+        rel="noreferrer"
+        class="site-outline-button rounded-md px-3 py-2 text-sm transition"
+      >
+        Demo
+      </a>
+    )}
+  </div>
+</article>

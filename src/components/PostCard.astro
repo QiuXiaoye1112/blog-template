@@ -1,0 +1,74 @@
+---
+import Tag from "./Tag.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  updatedDate?: Date;
+  href: string;
+  tags?: string[];
+  pinned?: boolean;
+  reveal?: boolean;
+  revealDelay?: number;
+}
+
+const {
+  title,
+  description,
+  date,
+  updatedDate,
+  href,
+  tags = [],
+  pinned = false,
+  reveal = false,
+  revealDelay = 0,
+} = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const displayUpdatedDate = updatedDate ?? date;
+const formattedDate = dateFormatter.format(date);
+const formattedUpdatedDate = dateFormatter.format(displayUpdatedDate);
+const revealStyle = reveal ? `--reveal-delay: ${revealDelay}ms` : undefined;
+---
+
+<article
+  class:list={[
+    "site-card site-post-card rounded-lg p-5 transition",
+    reveal && "scroll-reveal",
+    pinned && "is-pinned",
+  ]}
+  data-scroll-reveal={reveal ? "true" : undefined}
+  data-search-card
+  style={revealStyle}
+  data-title={title.toLowerCase()}
+>
+  <a href={href} class="group block">
+    <div class="site-muted mb-3 space-y-2 text-xs">
+      <div class="flex flex-wrap items-center gap-2">
+        {
+          pinned && (
+            <span class="site-badge rounded-full px-2.5 py-1 font-medium">
+              置顶
+            </span>
+          )
+        }
+        <span>发布 <time datetime={date.toISOString()}>{formattedDate}</time></span>
+        <span aria-hidden="true">|</span>
+        <span>最后修改 <time datetime={displayUpdatedDate.toISOString()}>{formattedUpdatedDate}</time></span>
+      </div>
+      {
+        tags.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {tags.map((tag) => <Tag label={tag} />)}
+          </div>
+        )
+      }
+    </div>
+    <h3 class="site-card-title text-lg font-semibold tracking-tight transition">{title}</h3>
+    <p class="site-card-description mt-3 text-sm leading-7">{description}</p>
+  </a>
+</article>

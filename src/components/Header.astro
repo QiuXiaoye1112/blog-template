@@ -1,0 +1,150 @@
+---
+const navItems = [
+  { href: "/", label: "首页" },
+  { href: "/projects", label: "项目" },
+  { href: "/blog", label: "博客" },
+  { href: "/notes", label: "笔记" },
+];
+
+const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
+const articleLabels: Record<string, string> = {
+  blog: "返回博客",
+  notes: "返回笔记",
+  projects: "返回项目",
+};
+const segments = pathname.split("/").filter(Boolean);
+const isArticle = segments.length >= 2 && segments[0] in articleLabels;
+const backHref = isArticle ? `/${segments[0]}` : "";
+const backLabel = isArticle ? articleLabels[segments[0]] : "";
+---
+
+<header class="site-header sticky top-0 z-40">
+  <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 md:px-6">
+    <div class="flex items-center gap-2">
+      <nav class="hidden items-center gap-1 md:flex" aria-label="主导航">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            class:list={[
+              "site-nav-link rounded-md px-3 py-2 text-sm transition",
+              isActive(item.href) && "is-active",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <details class="relative md:hidden">
+        <summary class="site-mobile-summary flex cursor-pointer list-none items-center rounded-md border px-3 py-2 text-sm">
+          菜单
+        </summary>
+        <nav class="site-mobile-nav absolute left-0 mt-3 w-44 rounded-lg border p-2 flex flex-col gap-1.5" aria-label="移动端导航">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              class:list={[
+                "site-nav-link block rounded-md px-3 py-2 text-sm transition",
+                isActive(item.href) && "is-active",
+              ]}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </details>
+    </div>
+
+    <div class="flex items-center gap-2">
+      {
+        isArticle && (
+          <>
+            <a
+              href={backHref}
+              aria-label={backLabel}
+              title={backLabel}
+              class="sticky-back-link"
+            >
+              <svg class="sticky-action-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 12H6.5"></path>
+                <path d="M11.5 6.5 6 12l5.5 5.5"></path>
+              </svg>
+              <span class="sticky-back-label">{backLabel}</span>
+            </a>
+            <button
+              type="button"
+              class="back-to-top"
+              data-back-to-top
+              aria-label="回到页面顶部"
+              title="回到顶部"
+            >
+              <svg class="sticky-action-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19V5"></path>
+                <path d="M6 11l6-6 6 6"></path>
+              </svg>
+              <span>回到顶部</span>
+            </button>
+          </>
+        )
+      }
+      <button
+        type="button"
+        class="background-toggle"
+        data-background-toggle
+        aria-label="切换背景图片"
+        aria-pressed="false"
+        title="切换背景图片"
+      >
+        <svg class="background-toggle-icon background-toggle-icon--photo" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <circle cx="8.5" cy="10" r="1.5"></circle>
+          <path d="m21 15-4.2-4.2a2 2 0 0 0-2.8 0L6 19"></path>
+        </svg>
+        <svg class="background-toggle-icon background-toggle-icon--plain" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <path d="M3 3l18 18"></path>
+          <path d="M8.5 10h.01"></path>
+          <path d="m15 12-2.3 2.3"></path>
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="theme-cycle-button"
+        data-theme-toggle
+        aria-label="切换主题模式"
+        title="切换主题模式"
+      >
+        <svg class="theme-cycle-icon theme-cycle-icon--system" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+          <path d="M8 20h8M12 16v4"></path>
+        </svg>
+        <svg class="theme-cycle-icon theme-cycle-icon--moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="theme-cycle-icon theme-cycle-icon--sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const button = document.querySelector("[data-back-to-top]");
+    if (!button) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    button.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: reducedMotion.matches ? "auto" : "smooth",
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Markdown demo image</title>
+  <desc id="desc">A simple demo image for the Markdown guide article.</desc>
+  <rect width="960" height="420" rx="32" fill="#0d121a"/>
+  <path d="M0 0h960v420H0z" fill="url(#grid)"/>
+  <rect x="64" y="64" width="832" height="292" rx="24" fill="#111824" stroke="#5eead4" stroke-opacity=".35"/>
+  <text x="108" y="136" fill="#a7f3d0" font-family="Inter, Segoe UI, sans-serif" font-size="38" font-weight="800">Markdown Image Demo</text>
+  <text x="108" y="190" fill="#d8e0ea" font-family="Inter, Segoe UI, sans-serif" font-size="24">把图片放进 public/images/blog/</text>
+  <text x="108" y="232" fill="#d8e0ea" font-family="Inter, Segoe UI, sans-serif" font-size="24">然后在文章里写：![说明](/images/blog/markdown-demo.svg)</text>
+  <rect x="108" y="276" width="292" height="48" rx="12" fill="#0f172a" stroke="#6ee7b7" stroke-opacity=".45"/>
+  <text x="132" y="307" fill="#d9f99d" font-family="Consolas, Menlo, monospace" font-size="20">/images/blog/demo.png</text>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0v32" fill="none" stroke="#94a3b8" stroke-opacity=".08"/>
+    </pattern>
+  </defs>
+</svg>

@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../components/Layout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+
+const projects = (await getCollection("projects", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+---
+
+<Layout title="项目" description="项目展示列表。">
+  <section>
+    <SectionTitle
+      eyebrow="Projects"
+      title="项目"
+      description="这里适合展示你做过、正在做或计划中的作品。"
+      framed
+    />
+    <div class="grid auto-rows-fr gap-5 md:grid-cols-2">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+</Layout>

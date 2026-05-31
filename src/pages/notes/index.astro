@@ -1,0 +1,41 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../components/Layout.astro";
+import PostCard from "../../components/PostCard.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
+import TitleSearch from "../../components/TitleSearch.astro";
+
+const notes = (await getCollection("notes", ({ data }) => !data.draft))
+  .sort((a, b) => {
+    if (a.data.pinned !== b.data.pinned) {
+      return a.data.pinned ? -1 : 1;
+    }
+
+    return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+  });
+---
+
+<Layout title="笔记" description="短笔记列表。">
+  <section data-search-section>
+    <SectionTitle
+      eyebrow="Notes"
+      framed
+      title="笔记"
+      description="这里适合放命令、配置、清单、链接和随手可查的小记录。"
+    />
+    <TitleSearch placeholder="搜索笔记标题..." />
+    <div class="grid gap-5 md:grid-cols-2">
+      {notes.map((note) => (
+        <PostCard
+          title={note.data.title}
+          description={note.data.description}
+          date={note.data.pubDate}
+          updatedDate={note.data.updatedDate}
+          href={`/notes/${note.id}`}
+          tags={note.data.tags}
+          pinned={note.data.pinned}
+        />
+      ))}
+    </div>
+  </section>
+</Layout>

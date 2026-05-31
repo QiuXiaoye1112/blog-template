@@ -1,0 +1,106 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../components/Layout.astro";
+import PostCard from "../components/PostCard.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+
+const homeEntry = (await getCollection("site")).find((entry) => entry.data.page === "home");
+
+if (!homeEntry) {
+  throw new Error("Missing src/content/site/home.md");
+}
+
+const home = homeEntry.data;
+
+if (home.page !== "home") {
+  throw new Error("Invalid home page content");
+}
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+
+const featuredProjects = (await getCollection("projects", ({ data }) => !data.draft && data.featured))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+const sectionLinkClass =
+  "site-link-pill group w-fit transition";
+---
+
+<Layout title="首页" description={home.description}>
+  <section class="site-hero-panel grid gap-10 rounded-[1.5rem] p-5 md:grid-cols-[minmax(0,1fr)_20rem] md:items-start md:p-8">
+    <div class="max-w-3xl">
+      <p class="site-badge mb-5 inline-flex rounded-full px-3 py-1 text-sm">
+        {home.badge}
+      </p>
+      <h1 class="home-hero-title site-title max-w-[46rem] text-4xl font-extrabold leading-[1.12] tracking-tight md:text-[3rem] lg:text-[3.35rem]">
+        {home.title}
+      </h1>
+      <p class="site-text mt-5 max-w-2xl text-lg leading-8">
+        {home.subtitle}
+      </p>
+      <p class="site-subtle mt-5 max-w-2xl border-l-2 border-[var(--accent-border)] pl-4 text-base leading-8">
+        {home.intro}
+      </p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a href={home.primaryAction.href} class="site-secondary-button rounded-md transition">
+          {home.primaryAction.label}
+        </a>
+        <a href={home.secondaryAction.href} class="site-secondary-button rounded-md transition">
+          {home.secondaryAction.label}
+        </a>
+      </div>
+    </div>
+
+    <aside class="site-surface rounded-lg p-5 md:mt-20">
+      <p class="site-kicker text-xs font-semibold uppercase tracking-[0.2em]">Start Here</p>
+      <p class="site-title mt-2 text-base font-semibold">{home.statusTitle}</p>
+      <ul class="site-subtle mt-5 space-y-3 text-sm leading-7">
+        {home.statusItems.map((item) => (
+          <li class="flex gap-3">
+            <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]"></span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  </section>
+
+  <section class="mt-14">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between [&>div]:mb-0">
+      <SectionTitle eyebrow="Projects" title="精选项目" />
+      <a href="/projects" class={sectionLinkClass}>
+        <span>全部项目</span>
+        <span aria-hidden="true" class="site-kicker transition-transform group-hover:translate-x-0.5">→</span>
+      </a>
+    </div>
+    <div class="grid auto-rows-fr gap-5 md:grid-cols-2">
+      {featuredProjects.map((project, index) => <ProjectCard project={project} reveal revealDelay={index * 100} />)}
+    </div>
+  </section>
+
+  <section class="mt-14">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between [&>div]:mb-0">
+      <SectionTitle eyebrow="Writing" title="最近文章" />
+      <a href="/blog" class={sectionLinkClass}>
+        <span>全部文章</span>
+        <span aria-hidden="true" class="site-kicker transition-transform group-hover:translate-x-0.5">→</span>
+      </a>
+    </div>
+    <div class="grid gap-5">
+      {posts.map((post, index) => (
+        <PostCard
+          title={post.data.title}
+          description={post.data.description}
+          date={post.data.pubDate}
+          updatedDate={post.data.updatedDate}
+          href={`/blog/${post.id}`}
+          tags={post.data.tags}
+          reveal
+          revealDelay={index * 100}
+        />
+      ))}
+    </div>
+  </section>
+</Layout>

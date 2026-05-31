@@ -1,0 +1,17 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  framed?: boolean;
+}
+
+const { eyebrow, title, description, framed = false } = Astro.props;
+const isFramed = framed || eyebrow === "Projects" || eyebrow === "Writing";
+---
+
+<div class:list={["mb-6", isFramed && "site-section-title rounded-[1.25rem] p-5"]}>
+  {eyebrow && <p class="site-kicker mb-2 text-xs font-semibold uppercase tracking-[0.22em]">{eyebrow}</p>}
+  <h2 class="site-title text-2xl font-semibold tracking-tight md:text-3xl">{title}</h2>
+  {description && <p class="site-subtle mt-3 max-w-2xl text-sm leading-7 md:text-base">{description}</p>}
+</div>

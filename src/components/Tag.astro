@@ -1,0 +1,11 @@
+---
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<span class="site-tag inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium">
+  {label}
+</span>

@@ -1,0 +1,81 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "../../components/Layout.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import Tag from "../../components/Tag.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ data }) => !data.draft);
+  return projects.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { title, description, pubDate, updatedDate, status, tech, github, demo } = entry.data;
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const displayUpdatedDate = updatedDate ?? pubDate;
+const formattedDate = dateFormatter.format(pubDate);
+const formattedUpdatedDate = dateFormatter.format(displayUpdatedDate);
+
+const statusClass = {
+  进行中: "site-status",
+  已完成: "site-status site-status--done",
+  计划中: "site-status site-status--planned",
+}[status];
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl">
+    <div class="site-article-shell mt-6 p-5 md:p-8">
+    <header class="site-divider border-b pb-8">
+      <div class="site-muted flex flex-wrap items-center gap-2 text-sm">
+        <span>发布 <time datetime={pubDate.toISOString()}>{formattedDate}</time></span>
+        <span aria-hidden="true">|</span>
+        <span>最后修改 <time datetime={displayUpdatedDate.toISOString()}>{formattedUpdatedDate}</time></span>
+        <span class={statusClass}>{status}</span>
+      </div>
+      <h1 class="site-title mt-4 text-3xl font-semibold tracking-tight md:text-5xl">{title}</h1>
+      <p class="site-subtle mt-5 text-base leading-8">{description}</p>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        {tech.map((item) => <Tag label={item} />)}
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        {github && (
+          <a
+            href={github}
+            target="_blank"
+            rel="noreferrer"
+            class="site-outline-button px-3 py-2 text-sm transition"
+          >
+            GitHub
+          </a>
+        )}
+        {demo && (
+          <a
+            href={demo}
+            target="_blank"
+            rel="noreferrer"
+            class="site-outline-button px-3 py-2 text-sm transition"
+          >
+            Demo
+          </a>
+        )}
+      </div>
+    </header>
+
+    <TableOfContents headings={headings} />
+    <div class="content-body mt-8">
+      <Content />
+    </div>
+    </div>
+  </article>
+</Layout>

@@ -1,0 +1,67 @@
+---
+interface Props {
+  placeholder?: string;
+}
+
+const { placeholder = "搜索标题..." } = Astro.props;
+---
+
+<div class="site-surface mb-6 rounded-lg p-4">
+  <label class="site-title block text-sm font-semibold">
+    标题搜索
+    <input
+      data-title-search
+      type="search"
+      placeholder={placeholder}
+      class="site-search-input mt-3 w-full rounded-md px-3 py-2 text-sm outline-none transition"
+    />
+  </label>
+  <p data-title-search-count class="site-muted mt-2 text-xs"></p>
+  <p data-title-search-empty class="site-muted mt-3 hidden text-sm">没有找到匹配的标题。</p>
+</div>
+
+<script>
+  function setupTitleSearch() {
+    document.querySelectorAll("[data-title-search]").forEach((input) => {
+      const section = input.closest("[data-search-section]");
+      if (!section || input.dataset.ready === "true") {
+        return;
+      }
+
+      input.dataset.ready = "true";
+      const cards = Array.from(section.querySelectorAll("[data-search-card]"));
+      const count = section.querySelector("[data-title-search-count]");
+      const empty = section.querySelector("[data-title-search-empty]");
+
+      function update() {
+        const query = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const title = card.getAttribute("data-title") ?? "";
+          const isVisible = !query || title.includes(query);
+          card.classList.toggle("hidden", !isVisible);
+
+          if (isVisible) {
+            visibleCount += 1;
+          }
+        });
+
+        if (count) {
+          count.textContent = query ? `找到 ${visibleCount} 条匹配内容` : `共 ${cards.length} 条内容`;
+        }
+
+        empty?.classList.toggle("hidden", visibleCount !== 0);
+      }
+
+      input.addEventListener("input", update);
+      update();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupTitleSearch);
+  } else {
+    setupTitleSearch();
+  }
+</script>

@@ -1,0 +1,41 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../components/Layout.astro";
+import PostCard from "../../components/PostCard.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
+import TitleSearch from "../../components/TitleSearch.astro";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => {
+    if (a.data.pinned !== b.data.pinned) {
+      return a.data.pinned ? -1 : 1;
+    }
+
+    return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+  });
+---
+
+<Layout title="博客" description="博客文章列表。">
+  <section data-search-section>
+    <SectionTitle
+      eyebrow="Blog"
+      framed
+      title="博客"
+      description="这里适合放相对完整的文章、教程、复盘和长期思考。"
+    />
+    <TitleSearch placeholder="搜索博客标题..." />
+    <div class="grid gap-5">
+      {posts.map((post) => (
+        <PostCard
+          title={post.data.title}
+          description={post.data.description}
+          date={post.data.pubDate}
+          updatedDate={post.data.updatedDate}
+          href={`/blog/${post.id}`}
+          tags={post.data.tags}
+          pinned={post.data.pinned}
+        />
+      ))}
+    </div>
+  </section>
+</Layout>

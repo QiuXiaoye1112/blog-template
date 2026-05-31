@@ -1,0 +1,52 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "../../components/Layout.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import Tag from "../../components/Tag.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const displayUpdatedDate = entry.data.updatedDate ?? entry.data.pubDate;
+const formattedDate = dateFormatter.format(entry.data.pubDate);
+const formattedUpdatedDate = dateFormatter.format(displayUpdatedDate);
+---
+
+<Layout title={entry.data.title} description={entry.data.description}>
+  <article class="mx-auto max-w-3xl">
+    <div class="site-article-shell mt-6 p-5 md:p-8">
+    <header class="site-divider border-b pb-8">
+      <div class="site-muted flex flex-wrap items-center gap-2 text-sm">
+        <span>发布 <time datetime={entry.data.pubDate.toISOString()}>{formattedDate}</time></span>
+        <span aria-hidden="true">|</span>
+        <span>最后修改 <time datetime={displayUpdatedDate.toISOString()}>{formattedUpdatedDate}</time></span>
+      </div>
+      {
+        entry.data.tags.length > 0 && (
+          <div class="mt-3 flex flex-wrap gap-2">
+            {entry.data.tags.map((tag) => <Tag label={tag} />)}
+          </div>
+        )
+      }
+      <h1 class="site-title mt-4 text-3xl font-semibold tracking-tight md:text-5xl">{entry.data.title}</h1>
+      <p class="site-subtle mt-5 text-base leading-8">{entry.data.description}</p>
+    </header>
+    <TableOfContents headings={headings} />
+    <div class="content-body mt-8">
+      <Content />
+    </div>
+    </div>
+  </article>
+</Layout>

@@ -1,0 +1,21 @@
+# build output
+dist/
+
+# generated files
+.astro/
+.hermes/
+node_modules/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
