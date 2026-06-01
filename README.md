@@ -18,7 +18,13 @@
 - 静态站点生成
 
 ## 快速开始
-
+先下载源文件：
+```bash
+git clone https://github.com/QiuXiaoye1112/blog-template.git
+```
+```bash
+cd blog-template
+```
 ```bash
 npm install
 npm run dev
